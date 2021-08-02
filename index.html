@@ -1,97 +1,117 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>reveal.js</title>
+		<title>Minorities Analysis</title>
 
-    <link rel="stylesheet" href="reveal.js/dist/reset.css" />
-    <link rel="stylesheet" href="reveal.js/dist/reveal.css" />
-    <link rel="stylesheet" href="reveal.js/dist/theme/serif.css" id="theme" />
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/night.css">
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		<link rel="import" href="./map.html">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h1>Minorities Analysis</h1>
+					<p>WHD Data Team</p>
+				</section>
+				<section>
+					<section>
+						<h3>Visualizing Where The Largest Numbers of Minorities Live</h3>
+						<p>With the Census Bureau's <a href="https://www.census.gov/data/tables/time-series/demo/popest/2010s-counties-detail.html" target="_blank">County Population by Characteristics</a> data set</p>
+					</section>
+					<section>
+						<h3>Method</h3>
+						<p>Using the 2019 vintage, for a given county we subtracted from the total population the <em>Not Hispanic, White alone</em> population</p>
+					</section>
+					<section>
+						<span>Non-White + White-Hispanic Population</span>
+						<div id="map"></div>
+					</section>
+					<section data-state="animateNumbers" data-auto-animate>
+						<h3>Regional Totals</h3>
+						<table>
+							<tr>
+								<th>Region</th>
+								<th>Total Minorities</th>
+							</tr>
+							<tr>
+								<td>Midwest</td>
+								<td class="animated-number">16,647,439</td>
+							</tr>
+							<tr>
+								<td>Northeast</td>
+								<td class="animated-number">26,917,296</td>
+							</tr>
+							<tr>
+								<td>Southeast</td>
+								<td class="animated-number">26,445,389</td>
+							</tr>
+							<tr>
+								<td>Southwest</td>
+								<td class="animated-number">25,626,282</td>
+							</tr>
+							<tr>
+								<td>West</td>
+								<td class="animated-number">35,257,975</td>
+							</tr>
+						</table>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h3>Visualizing The Largest Minority Workforces</h3>
+						<p>With the Census Bureau's <a href="https://www.census.gov/programs-surveys/acs/microdata/documentation.html" target="_blank">American Community Survey</a> data set</p>
+					</section>
+					<section>
+						<h3>Method</h3>
+						<p>We used the 2015 - 2019 five-year ACS file to identify the total estimated number of individuals <em>in the workforce</em> that are either non-White or are White-Hispanic</p>
+					</section>
+					<section>
+						<iframe data-src="map.html" frameborder="0" height="600px" width="900px"></iframe>
+					</section>
+				</section>
+			</div>
+		</div>
 
-    <!-- Theme used for syntax highlighted code -->
-    <link
-      rel="stylesheet"
-      href="reveal.js/plugin/highlight/monokai.css"
-      id="highlight-theme"
-    />
-  </head>
-  <body>
-    <div class="reveal">
-      <div class="slides">
-        <section
-          data-markdown
-          data-separator="-----"
-          data-separator-vertical="---"
-        >
-          <textarea data-template>
-            # Title Page
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script src="https://d3js.org/d3.v7.min.js"></script>
+		<script src="https://unpkg.com/topojson-client@3"></script>
+		<script src="assets/countiesMap.js"></script>
+		<script>
+			function animateValue(obj, start, end, duration, currency) {
+				let startTimestamp = null
+				const step = (timestamp) => {
+					if (!startTimestamp) startTimestamp = timestamp
+					const progress = Math.min((timestamp - startTimestamp) / duration, 1)
+					obj.innerHTML = currency ?
+						Math.floor(progress * (end - start) + start).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) :
+						Math.floor(progress * (end - start) + start).toLocaleString()
+					if (progress < 1) {
+						window.requestAnimationFrame(step)
+					}
+				};
+				window.requestAnimationFrame(step)
+			}
+			Reveal.initialize({
+				hash: true,
 
-            ### Date
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+			})
 
-            -----
-            
-            Vertical slides are separated by `- - -`
-            
-            ---
-            
-            Vertical slides are separated by `- - -` .
-            
-            ---
-            
-            Vertical slides are separated by `- - -` ..
-     
-            -----
-            
-            # title
-            ## skills
-            * one
-            * two
-            * three
-            
-            ## heading
-            8. three
-            1. one
-            1. two
-         
-            
-            -----
-            
-
-            # Questions
-
-            -----
-
-            ## made with
-
-            #### [reveal.js](https://github.com/hakimel/reveal.js)
-
-            #### [excalidraw](https://github.com/excalidraw/excalidraw)
-
-          </textarea>
-        </section>
-      </div>
-    </div>
-
-    <script src="reveal.js/dist/reveal.js"></script>
-    <script src="reveal.js/plugin/notes/notes.js"></script>
-    <script src="reveal.js/plugin/markdown/markdown.js"></script>
-    <script src="reveal.js/plugin/highlight/highlight.js"></script>
-    <script src="reveal.js/plugin/zoom/zoom.js"></script>
-    <script>
-      // More info about initialization & config:
-      // - https://revealjs.com/initialization/
-      // - https://revealjs.com/config/
-      Reveal.initialize({
-        hash: true,
-
-        // Learn about plugins: https://revealjs.com/plugins/
-        plugins: [RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom],
-      });
-    </script>
-  </body>
+			Reveal.on('animateNumbers', () => {
+				const nums = document.getElementsByClassName('animated-number')
+				nums.forEach(num => animateValue(num, 0, Number(num.innerText.replace(/\,/g,'')), 4000, false))
+			})
+		</script>
+	</body>
 </html>

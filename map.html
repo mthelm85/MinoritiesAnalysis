@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+</head>
+<body>
+    <div id="mapid"></div>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</body>
+<script>
+    let info = L.control();
+
+    let map = L.map('mapid').setView([40.2, -97.6], 5)
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map)
+
+    // Hack to ensure map tiles render properly
+    setTimeout(() => {
+        map.invalidateSize(true)
+    }, 10)
+
+    fetch("./assets/puma_2010_nonwhite.json")
+        .then(res => res.json())
+        .then(json => {
+            console.log(json)
+
+            function style(feature) {
+                return {
+                    fillColor: d3.scaleQuantize([100, 60000], d3.schemePurples[9])(feature.properties.total_non_white),
+                    weight: 1,
+                    opacity: 1,
+                    color: 'white',
+                    fillOpacity: 0.7
+                };
+            }
+
+            function highlightFeature(e) {
+                let layer = e.target;
+
+                layer.setStyle({
+                    weight: 2,
+                    color: '#666',
+                    dashArray: '',
+                    fillOpacity: 0.7
+                })
+
+                if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                    layer.bringToFront()
+                }
+
+                info.update(layer.feature.properties)
+            }
+
+            function resetHighlight(e) {
+                geojson.resetStyle(e.target)
+                info.update()
+            }
+
+            function zoomToFeature(e) {
+                map.fitBounds(e.target.getBounds())
+            }
+
+            function onEachFeature(feature, layer) {
+                layer.on({
+                    mouseover: highlightFeature,
+                    mouseout: resetHighlight,
+                    click: zoomToFeature
+                });
+            }
+
+            let pumaStyle = {
+                "color": "#ff7800",
+                "weight": 0.5,
+                "opacity": 1
+            }
+            let geojson
+            geojson = L.geoJSON(json.features, {
+                style: style,
+                onEachFeature: onEachFeature
+            }).addTo(map)
+
+            info.onAdd = function (map) {
+                this._div = L.DomUtil.create('div', 'info')
+                this.update()
+                return this._div
+            };
+
+            // method that we will use to update the control based on feature properties passed
+            info.update = function (props) {
+                this._div.innerHTML = '<h4>Total Non-White + White-Hispanic</h4>' +  (props ?
+                    '<b>' + props.Name + '</b><br />' + props.total_non_white.toLocaleString() + ' minorities in the workforce'
+                    : 'Hover over an area')
+            };
+
+            info.addTo(map)
+        })
+</script>
+<style>
+    #mapid {
+        height: 575px;
+        width: 100%;
+    }
+    .info {
+        padding: 6px 8px;
+        font: 14px/16px Arial, Helvetica, sans-serif;
+        background: white;
+        background: rgba(255,255,255,0.8);
+        box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        border-radius: 5px;
+    }
+    .info h4 {
+        margin: 0 0 5px;
+        color: #777;
+    }
+    .legend {
+        line-height: 18px;
+        color: #555;
+    }
+    .legend i {
+        width: 18px;
+        height: 18px;
+        float: left;
+        margin-right: 8px;
+        opacity: 0.7;
+    }
+</style>
+</html>
